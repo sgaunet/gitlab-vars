@@ -2,19 +2,41 @@ package gitlabapi
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 )
 
 type Variables []Variable
 
-func (v Variables) GetVar(key string) (Variable, error) {
-	for i := range v {
-		if v[i].Key == key {
-			return v[i], nil
+// IsVarPresent checks if a variable is present in a list of variables
+func IsVarPresent(vars []Variable, key string) bool {
+	for i := range vars {
+		if vars[i].Key == key {
+			return true
 		}
 	}
-	return Variable{}, fmt.Errorf("Variable %s not found", key)
+	return false
+}
+
+// GetIndexOfVar returns the index of a variable in a list of variables
+func GetIndexOfVar(vars []Variable, key string) int {
+	for i := range vars {
+		if vars[i].Key == key {
+			return i
+		}
+	}
+	return -1
+}
+
+// RemoveVar removes a variable from a list of variables
+func RemoveVar(vars []Variable, idx int) (res []Variable) {
+	for i := range vars {
+		if i != idx {
+			res = append(res, vars[i])
+		}
+	}
+	return res
 }
 
 func (v Variables) GetVarOfScope(key string, scope string) (Variable, error) {
@@ -39,33 +61,6 @@ func (v Variables) GetVarValue(key string) (string, error) {
 	return "", fmt.Errorf("Variable %s not found", key)
 }
 
-// func GetAllVarsOfGroup(groupId int, scope string) ([]Variable, error) {
-// 	g, err := GetGroup(groupId)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if g.IsRootGroup() {
-// 		return GetVarsOfGroup(groupId, scope)
-// 	}
-
-// 	var v []Variable
-// 	v, err = GetAllVarsOfGroup(g.GetParentId(), scope)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	vtmp, err := GetVarsOfGroup(groupId)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	v = append(v, vtmp...)
-// 	return v, nil
-// }
-
-// for v := range vars {
-// 	// fmt.Printf("%s=\"%s\"\n", vars[v].Key, EscapeBashCharacters(vars[v].Value))
-// 	fmt.Printf("%s//%s//%v\n", vars[v].Key, vars[v].VariableType, vars[v].Raw)
-// }
-
 // function EscapeBashCharacters espace bash characters
 func EscapeBashCharacters(s string) string {
 	s = strings.Replace(s, "\\", "\\\\", -1)
@@ -77,42 +72,11 @@ func EscapeBashCharacters(s string) string {
 	return s
 }
 
-// func (v Variables) DeleteVarsOutOfScope(scope string) (res Variables) {
-// 	for i := range v {
-// 		if IsVarPartOfScope(v[i].EnvironmentScope, scope) {
-// 			res = append(res, v[i])
-// 		}
-// 	}
-// 	return res
-// }
-
-// func IsVarPartOfScope(environment string, varScope string) bool {
-// 	return MatchPattern(varScope, environment)
-// }
-
-// MatchPattern checks whether a string matches a pattern
-// func MatchPattern(pattern, s string) bool {
-// 	if pattern == "*" {
-// 		return true
-// 	}
-// 	matched, _ := filepath.Match(pattern, s)
-// 	return matched
-// }
-
-// toto is a function that retruns a boolean
-// and is checking if the environeemnt is part of the scope
+// IsVarPartOfScope is checking if the environment is part of the scope
 // for example if the environment is "staging" and the scope is "staging" it returns true
 // if the environment is "staging" and the scope is "staging*" it returns true
 // if the environment is "staging/mtrg" and the scope is "staging*" it returns true
 // if the environment is "staging/mtrg" and the scope is "production" it returns false
-// if the environment is "staging/mtrg" and the scope is "production*" it returns false
-// if the environment is "staging/mtrg" and the scope is "staging/mtrg" it returns true
-// if the environment is "staging/mtrg" and the scope is "staging/mtrg*" it returns true
-// if the environment is "staging/mtrg" and the scope is "staging/mtrg/*" it returns true
-// if the environment is "staging/mtrg" and the scope is "staging/mtrg/*/*" it returns true
-// if the environment is "staging/mtrg" and the scope is "staging/mtrg/*/*/*" it returns true
-// if the environment is "staging/mtrg" and the scope is "staging/mtrg/*/*/*/*" it returns true
-// write the code copilot
 func IsVarPartOfScope(environment string, varScope string) bool {
 	if varScope == "*" {
 		return true
@@ -130,4 +94,51 @@ func IsVarPartOfScope(environment string, varScope string) bool {
 		return strings.HasPrefix(environment, varScope[:strings.Index(varScope, "*")]) && strings.HasSuffix(environment, varScope[strings.Index(varScope, "*")+1:])
 	}
 	return false
+}
+
+func MergeVars(parentVars []Variable, childVars []Variable) []Variable {
+	var res []Variable
+	res = make([]Variable, len(parentVars))
+	copy(res, parentVars)
+	for i := range childVars {
+		idx := GetIndexOfVar(res, childVars[i].Key)
+		if idx != -1 {
+			res = RemoveVar(res, idx)
+			res = append(res, childVars[i])
+		} else {
+			res = append(res, childVars[i])
+		}
+	}
+	return res
+}
+
+func ExpandAndPrintVars(vars Variables, scope string) {
+	for i := range vars {
+		if IsVarPartOfScope(scope, vars[i].EnvironmentScope) && vars[i].Raw {
+			os.Setenv(vars[i].Key, vars[i].Value)
+			fmt.Printf("%s=\"%s\"\n", vars[i].Key, EscapeBashCharacters(vars[i].Value))
+		}
+	}
+	for i := range vars {
+		if IsVarPartOfScope(scope, vars[i].EnvironmentScope) && !vars[i].Raw {
+			expandedVar := ExpandEnv(vars[i].Value)
+			fmt.Printf("==%s=\"%s\"\n", vars[i].Key, expandedVar)
+			os.Setenv(vars[i].Key, vars[i].Value)
+		}
+	}
+}
+
+// ExpandEnv replaces ${var} or $var in the string based on the values of the
+// current environment variables. The replacement is case-sensitive. References
+// to undefined variables are replaced by the empty string. A default value can
+// be given by using the form ${var:-default value}. The default value is used
+// only if var is unset or empty. A different value can be given by using the
+// form ${var:default value}. The default value is used if var is unset.
+// References to other variables are expanded as the string is processed.
+// Recursive references are not allowed. If there is an error in the syntax of
+// the variable reference, the reference is replaced by the empty string.
+func ExpandEnv(s string) string {
+	return os.Expand(s, func(v string) string {
+		return os.Getenv(v)
+	})
 }

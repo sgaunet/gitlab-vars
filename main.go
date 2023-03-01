@@ -21,9 +21,7 @@ func main() {
 		projectId  int
 		groupId    int
 		vOption    bool
-		// err        error
 	)
-	// Parameters treatment (except src + dest)
 	flag.StringVar(&debugLevel, "d", "error", "Debug level (info,warn,debug)")
 	flag.BoolVar(&vOption, "v", false, "Get version")
 	flag.IntVar(&projectId, "p", 0, "Project ID to get issues from")
@@ -41,7 +39,7 @@ func main() {
 		os.Exit(1)
 	}
 	if projectId != 0 && groupId != 0 {
-		fmt.Fprintln(os.Stderr, "-p and -g option are incompatible")
+		fmt.Fprintln(os.Stderr, "-p and -g options are incompatible")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -91,50 +89,14 @@ func main() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-
-		for _, vv := range v {
-			// os.Setenv(vv.Key, vv.Value)
-			fmt.Printf("(%s) %20s=%s\n", vv.EnvironmentScope, vv.Key, vv.Value)
-		}
-		// for _, vv := range v {
-		// 	if vv.Raw && vv.EnvironmentScope == "preprod" {
-		// 		os.Setenv(vv.Key, vv.Value)
-		// 		fmt.Println(vv.Key, "=", vv.Value)
-		// 	}
-		// }
-		// for _, vv := range v {
-		// 	if !vv.Raw && vv.EnvironmentScope == "preprod" {
-		// 		os.Setenv(vv.Key, vv.Value)
-		// 		fmt.Println(vv.Key, "=", ExpandEnv(vv.Value))
-		// 	}
-		// }
+		gitlabapi.ExpandAndPrintVars(v, "preprod-mtrg")
 	}
-
-	// _, err = gitlabapi.GetVarsOfProject(projectId)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
 
 	// os.Setenv("TOTO", "123456")
 	// os.Setenv("TOTO_TYU", "123456")
 	// fmt.Println(ExpandEnv("GLOBAL=$TOTO"))
 	// fmt.Println(ExpandEnv("GLOBAL=$TOTO_TYU"))
 	// fmt.Println(ExpandEnv("GLOBAL=${TOTO_TYU}"))
-}
-
-// ExpandEnv replaces ${var} or $var in the string based on the values of the
-// current environment variables. The replacement is case-sensitive. References
-// to undefined variables are replaced by the empty string. A default value can
-// be given by using the form ${var:-default value}. The default value is used
-// only if var is unset or empty. A different value can be given by using the
-// form ${var:default value}. The default value is used if var is unset.
-// References to other variables are expanded as the string is processed.
-// Recursive references are not allowed. If there is an error in the syntax of
-// the variable reference, the reference is replaced by the empty string.
-func ExpandEnv(s string) string {
-	return os.Expand(s, func(v string) string {
-		return os.Getenv(v)
-	})
 }
 
 func initTrace(debugLevel string) {

@@ -43,3 +43,87 @@ func TestVariables_GetVarOfScope(t *testing.T) {
 		})
 	}
 }
+
+func TestMergeVars(t *testing.T) {
+	type args struct {
+		parentVars []Variable
+		childVars  []Variable
+	}
+	tests := []struct {
+		name string
+		args args
+		want []Variable
+	}{
+		{
+			name: "MergeVars",
+			args: args{
+				parentVars: []Variable{
+					{Key: "key1", Value: "value1", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+				childVars: []Variable{
+					{Key: "key1", Value: "value4", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+			},
+			want: []Variable{
+				{Key: "key1", Value: "value4", EnvironmentScope: "preprod/*"},
+				{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+			},
+		},
+		{
+			name: "MergeVars with empty parentVars",
+			args: args{
+				parentVars: []Variable{},
+				childVars: []Variable{
+					{Key: "key1", Value: "value4", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+			},
+			want: []Variable{
+				{Key: "key1", Value: "value4", EnvironmentScope: "preprod/*"},
+				{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+			},
+		},
+		{
+			name: "MergeVars with empty childVars",
+			args: args{
+				parentVars: []Variable{
+					{Key: "key1", Value: "value4", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+				childVars: []Variable{},
+			},
+			want: []Variable{
+				{Key: "key1", Value: "value4", EnvironmentScope: "preprod/*"},
+				{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+			},
+		},
+		{
+			name: "MergeVars without merge",
+			args: args{
+				parentVars: []Variable{
+					{Key: "key1", Value: "value4", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+				childVars: []Variable{
+					{Key: "key3", Value: "value4", EnvironmentScope: "preprod/*"},
+					{Key: "key4", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+			},
+			want: []Variable{
+				{Key: "key1", Value: "value4", EnvironmentScope: "preprod/*"},
+				{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				{Key: "key3", Value: "value4", EnvironmentScope: "preprod/*"},
+				{Key: "key4", Value: "value2", EnvironmentScope: "preprod/*"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MergeVars(tt.args.parentVars, tt.args.childVars); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MergeVars() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
