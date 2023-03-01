@@ -58,7 +58,7 @@ func (p *GitlabProject) GetAllVars(scope string) ([]Variable, error) {
 		if err != nil {
 			return nil, err
 		}
-		v = append(v, vTmp...)
+		v = MergeVars(v, vTmp)
 	}
 
 	// Get all vars of project
@@ -66,7 +66,7 @@ func (p *GitlabProject) GetAllVars(scope string) ([]Variable, error) {
 	if err != nil {
 		return nil, err
 	}
-	v = append(v, vTmp...)
+	v = MergeVars(v, vTmp)
 
 	return v, nil
 }
