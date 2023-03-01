@@ -1,0 +1,35 @@
+# https://taskfile.dev
+version: '3'
+vars:
+  BINFILE: gitlab-vars
+  IMG: sgaunet/gitlab-vars:latest
+
+tasks:
+  default:
+    cmds:
+      - go mod download
+      - CGO_ENABLED=0 go build .
+      - upx ./{{.BINFILE}}
+    # silent: true
+    # sources:
+    # - ./**/*
+    # method: checksum
+    # generates:
+    #   - "{{.BINFILE}}"
+
+  # image:
+  #   deps: 
+  #   - default
+  #   sources:
+  #     - ./**/*
+  #   cmds:
+  #     - docker build . -t {{.IMG}}
+  #     - docker push {{.IMG}}
+
+  snapshot:
+    cmds:
+      - GITLAB_TOKEN="" goreleaser --clean --snapshot
+    
+  release:
+    cmds:
+      - GITLAB_TOKEN="" goreleaser --clean
