@@ -56,3 +56,24 @@ func (g *GitlabGroup) GetVarsOfGroup(scope string) (Variables, error) {
 	}
 	return vResult, nil
 }
+
+func (g *GitlabGroup) GetAllVars(scope string) ([]Variable, error) {
+	var v []Variable
+	parents, err := GetAllGroupParentId(g.Id)
+	if err != nil {
+		return nil, err
+	}
+	for p := range parents {
+		gTmp, err := GetGroup(parents[p])
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(gTmp.Id, gTmp.Name)
+		vTmp, err := gTmp.GetVarsOfGroup(scope)
+		if err != nil {
+			return nil, err
+		}
+		v = MergeVars(v, vTmp)
+	}
+	return v, nil
+}

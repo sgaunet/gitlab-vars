@@ -71,11 +71,17 @@ func main() {
 	}
 
 	if groupId != 0 {
-		_, err := gitlabapi.GetGroup(groupId)
+		g, err := gitlabapi.GetGroup(groupId)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+		v, err := g.GetAllVars("")
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		gitlabapi.ExpandAndPrintVars(v, "")
 	}
 
 	if projectId != 0 {
