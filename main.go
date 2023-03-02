@@ -17,12 +17,14 @@ func printVersion() {
 
 func main() {
 	var (
-		debugLevel string
-		projectId  int
-		groupId    int
-		vOption    bool
+		debugLevel  string
+		projectId   int
+		groupId     int
+		vOption     bool
+		environment string
 	)
 	flag.StringVar(&debugLevel, "d", "error", "Debug level (info,warn,debug)")
+	flag.StringVar(&environment, "e", "*", "environment to filter variables")
 	flag.BoolVar(&vOption, "v", false, "Get version")
 	flag.IntVar(&projectId, "p", 0, "Project ID to get issues from")
 	flag.IntVar(&groupId, "g", 0, "Group ID to get issues from (not compatible with -p option)")
@@ -76,12 +78,12 @@ func main() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		v, err := g.GetAllVars("")
+		v, err := g.GetAllVars(environment)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		gitlabapi.ExpandAndPrintVars(v, "")
+		gitlabapi.ExpandAndPrintVars(v, environment)
 	}
 
 	if projectId != 0 {
@@ -90,12 +92,12 @@ func main() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		v, err := p.GetAllVars("preprod-mtrg")
+		v, err := p.GetAllVars(environment)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		gitlabapi.ExpandAndPrintVars(v, "preprod-mtrg")
+		gitlabapi.ExpandAndPrintVars(v, environment)
 	}
 
 	// os.Setenv("TOTO", "123456")
