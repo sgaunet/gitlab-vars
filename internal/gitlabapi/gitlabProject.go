@@ -53,7 +53,7 @@ func (p *GitlabProject) GetAllVars(scope string) ([]Variable, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(g.Id, g.Name)
+		// fmt.Println(g.Id, g.Name)
 		vTmp, err := g.GetVarsOfGroup(scope)
 		if err != nil {
 			return nil, err

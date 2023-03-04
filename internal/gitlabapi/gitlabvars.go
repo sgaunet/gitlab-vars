@@ -122,7 +122,7 @@ func ExpandAndPrintVars(vars Variables, scope string) {
 	for i := range vars {
 		if IsVarPartOfScope(scope, vars[i].EnvironmentScope) && !vars[i].Raw {
 			expandedVar := ExpandEnv(vars[i].Value)
-			fmt.Printf("==%s=\"%s\"\n", vars[i].Key, expandedVar)
+			fmt.Printf("%s=\"%s\"\n", vars[i].Key, expandedVar)
 			os.Setenv(vars[i].Key, vars[i].Value)
 		}
 	}
