@@ -78,9 +78,13 @@ func EscapeBashCharacters(s string) string {
 // if the environment is "staging/mtrg" and the scope is "staging*" it returns true
 // if the environment is "staging/mtrg" and the scope is "production" it returns false
 func IsVarPartOfScope(environment string, varScope string) bool {
-	if varScope == "*" {
+	if varScope == "*" || varScope == "" {
 		return true
 	}
+	if environment == "" || environment == "*" {
+		return true
+	}
+
 	if environment == varScope {
 		return true
 	}
@@ -96,6 +100,7 @@ func IsVarPartOfScope(environment string, varScope string) bool {
 	return false
 }
 
+// !TODO this function should take care of the scope
 func MergeVars(parentVars []Variable, childVars []Variable) []Variable {
 	var res []Variable
 	res = make([]Variable, len(parentVars))

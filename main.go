@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/sgaunet/gitlab-vars/internal/gitlabapi"
+	"github.com/sgaunet/gitlab-vars/internal/gitlabvarsfile"
 	"github.com/sirupsen/logrus"
 )
 
@@ -97,6 +98,18 @@ func main() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+
+		currentDir := os.Getenv("PWD")
+		gitlabVarsFilePath, err := gitlabvarsfile.FindGitLabVarsFile(currentDir)
+		if err == nil && gitlabVarsFilePath != "" {
+			additionVars, err := gitlabvarsfile.ReadGitLabVarsFile(gitlabVarsFilePath)
+			fmt.Println("trouve ", len(additionVars))
+			if err == nil {
+				// Merge vars
+				v = gitlabapi.MergeVars(v, additionVars)
+			}
+		}
+
 		gitlabapi.ExpandAndPrintVars(v, environment)
 	}
 
