@@ -84,7 +84,8 @@ func main() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		gitlabapi.ExpandAndPrintVars(v, environment)
+		v = gitlabapi.FilterVars(v, environment)
+		gitlabapi.ExpandAndPrintVars(v)
 	}
 
 	if projectId != 0 {
@@ -106,11 +107,11 @@ func main() {
 			fmt.Println("trouve ", len(additionVars))
 			if err == nil {
 				// Merge vars
-				v = gitlabapi.MergeVars(v, additionVars)
+				vNoneFiltered := gitlabapi.MergeVars(v, additionVars)
+				v = gitlabapi.FilterVars(vNoneFiltered, environment)
 			}
 		}
-
-		gitlabapi.ExpandAndPrintVars(v, environment)
+		gitlabapi.ExpandAndPrintVars(v)
 	}
 
 	// os.Setenv("TOTO", "123456")

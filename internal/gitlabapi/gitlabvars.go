@@ -78,10 +78,11 @@ func EscapeBashCharacters(s string) string {
 // if the environment is "staging/mtrg" and the scope is "staging*" it returns true
 // if the environment is "staging/mtrg" and the scope is "production" it returns false
 func IsVarPartOfScope(environment string, varScope string) bool {
-	if varScope == "*" || varScope == "" {
+	if environment == "" {
 		return true
 	}
-	if environment == "" || environment == "*" {
+
+	if varScope == "*" || varScope == "" {
 		return true
 	}
 
@@ -100,7 +101,6 @@ func IsVarPartOfScope(environment string, varScope string) bool {
 	return false
 }
 
-// !TODO this function should take care of the scope
 func MergeVars(parentVars []Variable, childVars []Variable) []Variable {
 	var res []Variable
 	res = make([]Variable, len(parentVars))
@@ -117,15 +117,25 @@ func MergeVars(parentVars []Variable, childVars []Variable) []Variable {
 	return res
 }
 
-func ExpandAndPrintVars(vars Variables, scope string) {
+func FilterVars(vars Variables, scope string) Variables {
+	var res []Variable
 	for i := range vars {
-		if IsVarPartOfScope(scope, vars[i].EnvironmentScope) && vars[i].Raw {
+		if IsVarPartOfScope(scope, vars[i].EnvironmentScope) {
+			res = append(res, vars[i])
+		}
+	}
+	return res
+}
+
+func ExpandAndPrintVars(vars Variables) {
+	for i := range vars {
+		if vars[i].Raw {
 			os.Setenv(vars[i].Key, vars[i].Value)
 			fmt.Printf("export %s=\"%s\"\n", vars[i].Key, EscapeBashCharacters(vars[i].Value))
 		}
 	}
 	for i := range vars {
-		if IsVarPartOfScope(scope, vars[i].EnvironmentScope) && !vars[i].Raw {
+		if !vars[i].Raw {
 			expandedVar := ExpandEnv(vars[i].Value)
 			fmt.Printf("export %s=\"%s\"\n", vars[i].Key, expandedVar)
 			os.Setenv(vars[i].Key, vars[i].Value)
