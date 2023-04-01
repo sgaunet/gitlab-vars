@@ -127,3 +127,87 @@ func TestMergeVars(t *testing.T) {
 		})
 	}
 }
+
+func TestIsVarPresent(t *testing.T) {
+	type args struct {
+		vars []Variable
+		key  string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "IsVarPresent true",
+			args: args{
+				vars: []Variable{
+					{Key: "key1", Value: "value1", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+				key: "key1",
+			},
+			want: true,
+		},
+		{
+			name: "IsVarPresent true",
+			args: args{
+				vars: []Variable{
+					{Key: "key1", Value: "value1", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+				key: "key",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsVarPresent(tt.args.vars, tt.args.key); got != tt.want {
+				t.Errorf("IsVarPresent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetIndexOfVar(t *testing.T) {
+	type args struct {
+		vars []Variable
+		key  string
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "GetIndexOfVar",
+			args: args{
+				vars: []Variable{
+					{Key: "key1", Value: "value1", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+				key: "key1",
+			},
+			want: 0,
+		},
+		{
+			name: "GetIndexOfVar absent key",
+			args: args{
+				vars: []Variable{
+					{Key: "key1", Value: "value1", EnvironmentScope: "preprod/*"},
+					{Key: "key2", Value: "value2", EnvironmentScope: "preprod/*"},
+				},
+				key: "key",
+			},
+			want: -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetIndexOfVar(tt.args.vars, tt.args.key); got != tt.want {
+				t.Errorf("GetIndexOfVar() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
