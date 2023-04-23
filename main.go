@@ -25,7 +25,7 @@ func main() {
 		environment string
 	)
 	flag.StringVar(&debugLevel, "d", "error", "Debug level (info,warn,debug)")
-	flag.StringVar(&environment, "e", "*", "environment to filter variables")
+	flag.StringVar(&environment, "e", "*", "environment")
 	flag.BoolVar(&vOption, "v", false, "Get version")
 	flag.IntVar(&projectId, "p", 0, "Project ID to get issues from")
 	flag.IntVar(&groupId, "g", 0, "Group ID to get issues from (not compatible with -p option)")
@@ -65,7 +65,7 @@ func main() {
 		remoteOrigin := GetRemoteOrigin(gitFolder + string(os.PathSeparator) + ".git" + string(os.PathSeparator) + "config")
 		project, err := findProject(remoteOrigin)
 		if err != nil {
-			logrus.Errorln(err.Error())
+			logrus.Errorln("gitlab project not found")
 			os.Exit(1)
 		}
 		logrus.Infoln("Project found: ", project.SshUrlToRepo)

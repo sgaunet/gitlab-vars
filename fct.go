@@ -19,7 +19,7 @@ type project struct {
 	HttpUrlToRepo string `json:"http_url_to_repo"`
 }
 
-func findProject(remoteOrigin string) (project, error) {
+func findProject(remoteOrigin string) (*project, error) {
 	projectName := filepath.Base(remoteOrigin)
 	projectName = strings.ReplaceAll(projectName, ".git", "")
 	log.Infof("Try to find project %s in %s\n", projectName, os.Getenv("GITLAB_URI"))
@@ -33,8 +33,7 @@ func findProject(remoteOrigin string) (project, error) {
 	var p []project
 	err = json.Unmarshal(res, &p)
 	if err != nil {
-		log.Errorln(err.Error())
-		os.Exit(1)
+		return nil, err
 	}
 
 	for _, project := range p {
@@ -44,10 +43,10 @@ func findProject(remoteOrigin string) (project, error) {
 		log.Debugln(project.SshUrlToRepo)
 
 		if project.SshUrlToRepo == remoteOrigin {
-			return project, err
+			return &project, err
 		}
 	}
-	return project{}, errors.New("project not found")
+	return nil, errors.New("project not found")
 }
 
 func findGitRepository() (string, error) {
