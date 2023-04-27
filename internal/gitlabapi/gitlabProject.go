@@ -2,8 +2,40 @@ package gitlabapi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"path/filepath"
+	"strings"
 )
+
+func FindProject(remoteOrigin string) (*project, error) {
+	projectName := filepath.Base(remoteOrigin)
+	projectName = strings.ReplaceAll(projectName, ".git", "")
+	// log.Infof("Try to find project %s in %s\n", projectName, os.Getenv("GITLAB_URI"))
+
+	_, res, err := Request("search?scope=projects&search=" + projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	var p []project
+	err = json.Unmarshal(res, &p)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, project := range p {
+		// log.Debugln(project.Name)
+		// log.Debugln(project.Id)
+		// log.Debugln(project.HttpUrlToRepo)
+		// log.Debugln(project.SshUrlToRepo)
+
+		if project.SshUrlToRepo == remoteOrigin {
+			return &project, err
+		}
+	}
+	return nil, errors.New("project not found")
+}
 
 func GetProject(projectId int) (*GitlabProject, error) {
 	var g GitlabProject

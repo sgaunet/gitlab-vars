@@ -3,7 +3,6 @@ package gitlabvarsfile
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,7 +13,6 @@ import (
 // FindGitLabVarsFile is a recursive function to find .gitlab-vars.json file
 // in the current directory and in the parent directories
 func FindGitLabVarsFile(path string) (string, error) {
-	fmt.Println(path)
 	f := filepath.Join(path, ".gitlab-vars.json")
 	if _, err := os.Stat(f); err == nil {
 		return f, nil

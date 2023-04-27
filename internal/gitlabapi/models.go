@@ -1,5 +1,12 @@
 package gitlabapi
 
+type project struct {
+	Id            int    `json:"id"`
+	Name          string `json:"name"`
+	SshUrlToRepo  string `json:"ssh_url_to_repo"`
+	HttpUrlToRepo string `json:"http_url_to_repo"`
+}
+
 type GitlabGroup struct {
 	Id       int    `json:"id"`
 	Name     string `json:"name"`

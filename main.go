@@ -7,6 +7,7 @@ import (
 
 	"github.com/sgaunet/gitlab-vars/internal/gitlabapi"
 	"github.com/sgaunet/gitlab-vars/internal/gitlabvarsfile"
+	"github.com/sgaunet/gitlab-vars/pkg/git"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,6 +23,7 @@ func main() {
 		projectId   int
 		groupId     int
 		vOption     bool
+		helpOption  bool
 		environment string
 	)
 	flag.StringVar(&debugLevel, "d", "error", "Debug level (info,warn,debug)")
@@ -29,10 +31,16 @@ func main() {
 	flag.BoolVar(&vOption, "v", false, "Get version")
 	flag.IntVar(&projectId, "p", 0, "Project ID to get issues from")
 	flag.IntVar(&groupId, "g", 0, "Group ID to get issues from (not compatible with -p option)")
+	flag.BoolVar(&helpOption, "h", false, "Print help command line")
 	flag.Parse()
 
 	if vOption {
 		printVersion()
+		os.Exit(0)
+	}
+
+	if helpOption {
+		printHelp()
 		os.Exit(0)
 	}
 
@@ -57,13 +65,17 @@ func main() {
 
 	if groupId == 0 && projectId == 0 {
 		// Try to find git repository and project
-		gitFolder, err := findGitRepository()
+		gitFolder, err := git.FindGitRepository()
 		if err != nil {
 			logrus.Errorf("Folder .git not found")
 			os.Exit(1)
 		}
-		remoteOrigin := GetRemoteOrigin(gitFolder + string(os.PathSeparator) + ".git" + string(os.PathSeparator) + "config")
-		project, err := findProject(remoteOrigin)
+		remoteOrigin, err := git.GetRemoteOrigin(gitFolder + string(os.PathSeparator) + ".git" + string(os.PathSeparator) + "config")
+		if err != nil {
+			logrus.Errorf(err.Error())
+			os.Exit(1)
+		}
+		project, err := gitlabapi.FindProject(remoteOrigin)
 		if err != nil {
 			logrus.Errorln("gitlab project not found")
 			os.Exit(1)
@@ -104,7 +116,7 @@ func main() {
 		gitlabVarsFilePath, err := gitlabvarsfile.FindGitLabVarsFile(currentDir)
 		if err == nil && gitlabVarsFilePath != "" {
 			additionVars, err := gitlabvarsfile.ReadGitLabVarsFile(gitlabVarsFilePath)
-			fmt.Println("trouve ", len(additionVars))
+			// fmt.Println("trouve ", len(additionVars))
 			if err == nil {
 				// Merge vars
 				vNoneFiltered := gitlabapi.MergeVars(v, additionVars)
@@ -113,12 +125,6 @@ func main() {
 		}
 		gitlabapi.ExpandAndPrintVars(v)
 	}
-
-	// os.Setenv("TOTO", "123456")
-	// os.Setenv("TOTO_TYU", "123456")
-	// fmt.Println(ExpandEnv("GLOBAL=$TOTO"))
-	// fmt.Println(ExpandEnv("GLOBAL=$TOTO_TYU"))
-	// fmt.Println(ExpandEnv("GLOBAL=${TOTO_TYU}"))
 }
 
 func initTrace(debugLevel string) {
