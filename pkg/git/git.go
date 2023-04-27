@@ -9,7 +9,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-func FindGitRepository() (string, error) {
+func findGitRepository() (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -27,11 +27,23 @@ func FindGitRepository() (string, error) {
 	return "", errors.New(".git not found")
 }
 
-func GetRemoteOrigin(gitConfigFile string) (string, error) {
+func getRemoteOrigin(gitConfigFile string) (string, error) {
 	cfg, err := ini.Load(gitConfigFile)
 	if err != nil {
 		return "", fmt.Errorf("fail to read file %v: %w", gitConfigFile, err)
 	}
 	url := cfg.Section("remote \"origin\"").Key("url").String()
 	return url, nil
+}
+
+func RetrieveRemoteOriginFromGitConfig() (string, error) {
+	gitFolder, err := findGitRepository()
+	if err != nil {
+		return "", err
+	}
+	remoteOrigin, err := getRemoteOrigin(gitFolder + string(os.PathSeparator) + ".git" + string(os.PathSeparator) + "config")
+	if err != nil {
+		return "", err
+	}
+	return remoteOrigin, nil
 }
