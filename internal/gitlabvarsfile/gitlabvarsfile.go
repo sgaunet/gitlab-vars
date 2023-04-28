@@ -35,3 +35,19 @@ func ReadGitLabVarsFile(filepath string) ([]gitlabapi.Variable, error) {
 	}
 	return gitlabVarsFile.Variables, nil
 }
+
+func UpdateVarsWithGitlabVarsFileIfExist(v []gitlabapi.Variable, environment string) ([]gitlabapi.Variable, error) {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return v, err
+	}
+	gitlabVarsFilePath, err := FindGitLabVarsFile(currentDir)
+	if err == nil && gitlabVarsFilePath != "" {
+		additionVars, err := ReadGitLabVarsFile(gitlabVarsFilePath)
+		if err == nil {
+			vNoneFiltered := gitlabapi.MergeVars(v, additionVars)
+			v = gitlabapi.FilterVars(vNoneFiltered, environment)
+		}
+	}
+	return v, nil
+}

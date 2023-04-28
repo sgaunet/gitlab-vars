@@ -7,7 +7,6 @@ import (
 
 	tty "github.com/mattn/go-tty"
 	"github.com/sgaunet/gitlab-vars/internal/gitlabapi"
-	"github.com/sgaunet/gitlab-vars/internal/gitlabvarsfile"
 	"github.com/sgaunet/gitlab-vars/pkg/git"
 )
 
@@ -78,51 +77,16 @@ func main() {
 			l.Errorln("gitlab project not found")
 			os.Exit(1)
 		}
-		l.Infoln("Project found: ", project.SshUrlToRepo)
-		l.Infoln("Project found: ", project.Id)
+		l.Infof("Project found (ssh url: %s  ID: %d)\n", project.SshUrlToRepo, project.Id)
 		projectId = project.Id
 	}
 
 	if groupId != 0 {
-		g, err := gitlabapi.GetGroup(groupId)
-		if err != nil {
-			l.Errorln(err.Error())
-			os.Exit(1)
-		}
-		v, err := g.GetAllVars(environment)
-		if err != nil {
-			l.Errorln(err.Error())
-			os.Exit(1)
-		}
-		v = gitlabapi.FilterVars(v, environment)
-		gitlabapi.ExpandAndPrintVars(v)
+		printVarsOfGroup(groupId, environment, l)
 	}
 
 	if projectId != 0 {
-		p, err := gitlabapi.GetProject(projectId)
-		if err != nil {
-			l.Errorln(err.Error())
-			os.Exit(1)
-		}
-		v, err := p.GetAllVars(environment)
-		if err != nil {
-			l.Errorln(err.Error())
-			os.Exit(1)
-		}
-
-		currentDir, err := os.Getwd()
-		if err != nil {
-			l.Errorln(err.Error())
-			os.Exit(1)
-		}
-		gitlabVarsFilePath, err := gitlabvarsfile.FindGitLabVarsFile(currentDir)
-		if err == nil && gitlabVarsFilePath != "" {
-			additionVars, err := gitlabvarsfile.ReadGitLabVarsFile(gitlabVarsFilePath)
-			if err == nil {
-				vNoneFiltered := gitlabapi.MergeVars(v, additionVars)
-				v = gitlabapi.FilterVars(vNoneFiltered, environment)
-			}
-		}
-		gitlabapi.ExpandAndPrintVars(v)
+		printVarsOfProject(projectId, environment, l)
 	}
+
 }
