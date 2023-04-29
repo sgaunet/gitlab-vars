@@ -11,7 +11,7 @@ import (
 )
 
 // FindGitLabVarsFile is a recursive function to find .gitlab-vars.json file
-// in the current directory and in the parent directories
+// in the current directory or in parent directories
 func FindGitLabVarsFile(path string) (string, error) {
 	f := filepath.Join(path, ".gitlab-vars.json")
 	if _, err := os.Stat(f); err == nil {
@@ -23,6 +23,7 @@ func FindGitLabVarsFile(path string) (string, error) {
 	return FindGitLabVarsFile(filepath.Dir(path))
 }
 
+// ReadGitLabVarsFile reads a .gitlab-vars.json file and returns a slice of gitlabapi.Variable
 func ReadGitLabVarsFile(filepath string) ([]gitlabapi.Variable, error) {
 	jsonContent, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -36,6 +37,7 @@ func ReadGitLabVarsFile(filepath string) ([]gitlabapi.Variable, error) {
 	return gitlabVarsFile.Variables, nil
 }
 
+// UpdateVarsWithGitlabVarsFileIfExist updates a slice of gitlabapi.Variable with a .gitlab-vars.json file
 func UpdateVarsWithGitlabVarsFileIfExist(v []gitlabapi.Variable, environment string) ([]gitlabapi.Variable, error) {
 	currentDir, err := os.Getwd()
 	if err != nil {

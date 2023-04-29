@@ -39,6 +39,7 @@ func RemoveVar(vars []Variable, idx int) (res []Variable) {
 	return res
 }
 
+// GetVarOfScope returns the variable of a scope
 func (v Variables) GetVarOfScope(key string, scope string) (Variable, error) {
 	for i := range v {
 		if re, err := regexp.MatchString(v[i].EnvironmentScope, scope); err == nil && re && v[i].Key == key {
@@ -52,6 +53,7 @@ func (v Variables) GetVarOfScope(key string, scope string) (Variable, error) {
 	return Variable{}, fmt.Errorf("Variable %s not found", key)
 }
 
+// GetVarValue returns the value of a variable
 func (v Variables) GetVarValue(key string) (string, error) {
 	for i := range v {
 		if v[i].Key == key {
@@ -101,6 +103,8 @@ func IsVarPartOfScope(environment string, varScope string) bool {
 	return false
 }
 
+// MergeVars merges two lists of variables
+// if a variable is present in both lists, the variable from the child list is used
 func MergeVars(parentVars []Variable, childVars []Variable) []Variable {
 	var res []Variable
 	res = make([]Variable, len(parentVars))
@@ -117,6 +121,7 @@ func MergeVars(parentVars []Variable, childVars []Variable) []Variable {
 	return res
 }
 
+// FilterVars filters the variables based on the scope
 func FilterVars(vars Variables, scope string) Variables {
 	var res []Variable
 	for i := range vars {
@@ -127,6 +132,7 @@ func FilterVars(vars Variables, scope string) Variables {
 	return res
 }
 
+// ExpandAndPrintVars expands the variables and prints them to stdout
 func ExpandAndPrintVars(vars Variables) {
 	for i := range vars {
 		if vars[i].Raw {
