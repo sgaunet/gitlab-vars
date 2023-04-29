@@ -8,7 +8,10 @@ import (
 func GetGroup(groupId int) (*GitlabGroup, error) {
 	var g GitlabGroup
 	uri := fmt.Sprintf("groups/%d", groupId)
-	_, body, _ := Request(uri)
+	body, err := Request(uri)
+	if err != nil {
+		return nil, err
+	}
 	if err := json.Unmarshal(body, &g); err != nil {
 		return nil, err
 	}
@@ -44,7 +47,10 @@ func (g *GitlabGroup) GetAllGroupParentId() ([]int, error) {
 func (g *GitlabGroup) GetVarsOfGroup(scope string) (Variables, error) {
 	var v, vResult Variables
 	uri := fmt.Sprintf("groups/%d/variables", g.Id)
-	_, body, _ := Request(uri)
+	body, err := Request(uri)
+	if err != nil {
+		return nil, err
+	}
 	if err := json.Unmarshal(body, &v); err != nil {
 		return nil, err
 	}
