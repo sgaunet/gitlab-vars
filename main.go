@@ -6,7 +6,6 @@ import (
 	"os"
 
 	tty "github.com/mattn/go-tty"
-	"github.com/sgaunet/gitlab-vars/internal/gitlabapi"
 	"github.com/sgaunet/gitlab-vars/pkg/git"
 )
 
@@ -48,15 +47,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Init logger
 	t, err := tty.Open()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "tty.Open: %s\n", err.Error())
 		os.Exit(1)
 	}
-
 	defer t.Close()
 	l := initTrace(t.Output(), debugLevel)
 
+	// Check environment variables
 	if len(os.Getenv("GITLAB_TOKEN")) == 0 {
 		l.Errorf("Set GITLAB_TOKEN environment variable")
 		os.Exit(1)
@@ -65,28 +65,18 @@ func main() {
 		os.Setenv("GITLAB_URI", "https://gitlab.com")
 	}
 
+	// No projectid or groupid specified, try to find it from git config
 	if groupId == 0 && projectId == 0 {
-		// Try to find git repository and project
-		remoteOrigin, err := git.RetrieveRemoteOriginFromGitConfig()
+		projectId, err = git.TryToFindGitlabProjectFromGitConfig(l)
 		if err != nil {
-			l.Errorf(err.Error())
+			l.Errorf("gitlab project from gitconfig not found: %s", err.Error())
 			os.Exit(1)
 		}
-		project, err := gitlabapi.FindProject(remoteOrigin)
-		if err != nil {
-			l.Errorln("gitlab project not found")
-			os.Exit(1)
-		}
-		l.Infof("Project found (ssh url: %s  ID: %d)\n", project.SshUrlToRepo, project.Id)
-		projectId = project.Id
 	}
-
 	if groupId != 0 {
 		printVarsOfGroup(groupId, environment, l)
 	}
-
 	if projectId != 0 {
 		printVarsOfProject(projectId, environment, l)
 	}
-
 }
