@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	tty "github.com/mattn/go-tty"
 	"github.com/sgaunet/gitlab-vars/pkg/git"
 )
 
@@ -17,14 +16,13 @@ func printVersion() {
 
 func main() {
 	var (
-		debugLevel  string
 		projectId   int
 		groupId     int
 		vOption     bool
 		helpOption  bool
 		environment string
+		err         error
 	)
-	flag.StringVar(&debugLevel, "d", "error", "Debug level (info,warn,debug)")
 	flag.StringVar(&environment, "e", "*", "environment")
 	flag.BoolVar(&vOption, "v", false, "Get version")
 	flag.IntVar(&projectId, "p", 0, "Project ID to get issues from")
@@ -47,18 +45,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Init logger
-	t, err := tty.Open()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "tty.Open: %s\n", err.Error())
-		os.Exit(1)
-	}
-	defer t.Close()
-	l := initTrace(t.Output(), debugLevel)
-
 	// Check environment variables
 	if len(os.Getenv("GITLAB_TOKEN")) == 0 {
-		l.Errorf("Set GITLAB_TOKEN environment variable")
+		fmt.Fprintln(os.Stderr, "Set GITLAB_TOKEN environment variable")
 		os.Exit(1)
 	}
 	if len(os.Getenv("GITLAB_URI")) == 0 {
@@ -67,16 +56,24 @@ func main() {
 
 	// No projectid or groupid specified, try to find it from git config
 	if groupId == 0 && projectId == 0 {
-		projectId, err = git.TryToFindGitlabProjectFromGitConfig(l)
+		projectId, err = git.TryToFindGitlabProjectFromGitConfig()
 		if err != nil {
-			l.Errorf("gitlab project from gitconfig not found: %s", err.Error())
+			fmt.Fprintf(os.Stderr, "gitlab project from gitconfig not found: %s", err.Error())
 			os.Exit(1)
 		}
 	}
 	if groupId != 0 {
-		printVarsOfGroup(groupId, environment, l)
+		err = printVarsOfGroup(groupId, environment)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "printVarsOfGroup: %s\n", err.Error())
+			os.Exit(1)
+		}
 	}
 	if projectId != 0 {
-		printVarsOfProject(projectId, environment, l)
+		err = printVarsOfProject(projectId, environment)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "printVarsOfProject: %s\n", err.Error())
+			os.Exit(1)
+		}
 	}
 }

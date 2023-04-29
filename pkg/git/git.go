@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/sgaunet/gitlab-vars/internal/gitlabapi"
-	"github.com/sirupsen/logrus"
 	"gopkg.in/ini.v1"
 )
 
@@ -50,7 +49,7 @@ func retrieveRemoteOriginFromGitConfig() (string, error) {
 	return remoteOrigin, nil
 }
 
-func TryToFindGitlabProjectFromGitConfig(l *logrus.Logger) (int, error) {
+func TryToFindGitlabProjectFromGitConfig() (int, error) {
 	remoteOrigin, err := retrieveRemoteOriginFromGitConfig()
 	if err != nil {
 		return 0, err
@@ -59,6 +58,5 @@ func TryToFindGitlabProjectFromGitConfig(l *logrus.Logger) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	l.Infof("Project found (ssh url: %s  ID: %d)\n", project.SshUrlToRepo, project.Id)
 	return project.Id, nil
 }
