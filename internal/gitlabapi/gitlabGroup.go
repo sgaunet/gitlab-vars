@@ -8,7 +8,8 @@ import (
 func GetGroup(groupId int) (*GitlabGroup, error) {
 	var g GitlabGroup
 	uri := fmt.Sprintf("groups/%d", groupId)
-	body, err := Request(uri)
+	gc := NewGitlapApiClient()
+	body, err := gc.Request(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,8 @@ func (g *GitlabGroup) GetAllGroupParentId() ([]int, error) {
 func (g *GitlabGroup) GetVarsOfGroup(scope string) (Variables, error) {
 	var v, vResult Variables
 	uri := fmt.Sprintf("groups/%d/variables", g.Id)
-	body, err := Request(uri)
+	gc := NewGitlapApiClient()
+	body, err := gc.Request(uri)
 	if err != nil {
 		return nil, err
 	}

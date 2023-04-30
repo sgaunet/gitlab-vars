@@ -11,7 +11,8 @@ import (
 func FindProject(remoteOrigin string) (*project, error) {
 	projectName := filepath.Base(remoteOrigin)
 	projectName = strings.ReplaceAll(projectName, ".git", "")
-	res, err := Request("search?scope=projects&search=" + projectName)
+	gc := NewGitlapApiClient()
+	res, err := gc.Request("search?scope=projects&search=" + projectName)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +32,8 @@ func FindProject(remoteOrigin string) (*project, error) {
 func GetProject(projectId int) (*GitlabProject, error) {
 	var g GitlabProject
 	uri := fmt.Sprintf("projects/%d", projectId)
-	body, err := Request(uri)
+	gc := NewGitlapApiClient()
+	body, err := gc.Request(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +100,9 @@ func (p *GitlabProject) GetAllVars(scope string) ([]Variable, error) {
 
 func (p *GitlabProject) GetVarsOfProject(scope string) (Variables, error) {
 	var v, vResult []Variable
+	g := NewGitlapApiClient()
 	uri := fmt.Sprintf("projects/%d/variables", p.Id)
-	body, err := Request(uri)
+	body, err := g.Request(uri)
 	if err != nil {
 		return nil, err
 	}
