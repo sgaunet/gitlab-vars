@@ -325,12 +325,52 @@ func TestIsVarPartOfScope(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "env * scope **",
+			name: "env * scope *",
 			args: args{
 				environment: "",
 				varScope:    "*",
 			},
 			want: true,
+		},
+		{
+			name: "env prod scope *",
+			args: args{
+				environment: "prod",
+				varScope:    "*",
+			},
+			want: true,
+		},
+		{
+			name: "env app1-first-prod scope app1*prod",
+			args: args{
+				environment: "app1-first-prod",
+				varScope:    "app1*prod",
+			},
+			want: true,
+		},
+		{
+			name: "env preprod scope *",
+			args: args{
+				environment: "preprod",
+				varScope:    "*",
+			},
+			want: true,
+		},
+		{
+			name: "env preprod scope *prod",
+			args: args{
+				environment: "preprod",
+				varScope:    "*prod",
+			},
+			want: true,
+		},
+		{
+			name: "env preprod scope *test",
+			args: args{
+				environment: "preprod",
+				varScope:    "*test",
+			},
+			want: false,
 		},
 	}
 	for _, tt := range tests {
