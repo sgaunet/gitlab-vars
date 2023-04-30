@@ -22,7 +22,7 @@ func FindProject(remoteOrigin string) (*project, error) {
 		return nil, err
 	}
 	for _, project := range p {
-		if project.SshUrlToRepo == remoteOrigin {
+		if project.SshUrlToRepo == remoteOrigin || project.HttpUrlToRepo == remoteOrigin {
 			return &project, err
 		}
 	}
