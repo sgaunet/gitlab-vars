@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/sgaunet/gitlab-vars)](https://goreportcard.com/report/github.com/sgaunet/gitlab-vars)
+
 
 # gitlab-vars
 
