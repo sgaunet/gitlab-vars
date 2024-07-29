@@ -1,4 +1,10 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/sgaunet/gitlab-vars)](https://goreportcard.com/report/github.com/sgaunet/gitlab-vars)
+[![GitHub release](https://img.shields.io/github/release/sgaunet/gitlab-vars.svg)](https://github.com/sgaunet/gitlab-vars/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sgaunet/gitlab-vars)](https://goreportcard.com/report/github.com/sgaunet/gitlab-vars)
+![GitHub Downloads](https://img.shields.io/github/downloads/sgaunet/gitlab-vars/total)
+[![Maintainability](https://api.codeclimate.com/v1/badges/061be3219efb765b5461/maintainability)](https://codeclimate.com/github/sgaunet/gitlab-vars/maintainability)
+[![GoDoc](https://godoc.org/github.com/sgaunet/gitlab-vars?status.svg)](https://godoc.org/github.com/sgaunet/gitlab-vars)
+[![License](https://img.shields.io/github/license/sgaunet/gitlab-vars.svg)]
 
 
 # gitlab-vars
