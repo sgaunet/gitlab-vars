@@ -28,9 +28,16 @@ jobs:
           rm profile.cov
           echo "COVERAGE_VALUE=${total}" >> $GITHUB_ENV
 
+      - uses: actions/checkout@v4
+        with:
+          repository: sgaunet/gh-action-test
+          path: gh-action-test
+          ref: main
+          fetch-depth: 1
+
       - name: Generate coverage badge
         id: coverage-badge
-        uses: ./.github/actions/gh-action-coverage
+        uses: ./gh-action-test/.github/actions/gh-action-coverage
         with:
           limit-coverage: "50"
           badge-label: "coverage"
