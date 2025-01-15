@@ -10,6 +10,15 @@ tasks:
       - CGO_ENABLED=0 go build .
       - upx ./{{.BINFILE}}
 
+  coverage:
+    cmds:
+      - go test -coverpkg=./... -coverprofile=profile.cov ./...
+      # - sed -i '/cmd\/send-mail/d' profile.cov
+      # - sed -i '/internal\/sftpserver/d' profile.cov
+      # - sed -i '/internal\/smtpserver/d' profile.cov
+      - go tool cover -func profile.cov | grep '^total:' | awk '{print $3}' | sed "s/%//"
+      - rm profile.cov
+
   snapshot:
     cmds:
       - GITLAB_TOKEN="" goreleaser --clean --snapshot
