@@ -1,7 +1,7 @@
 name: Generate coverage badges
 on:
   push:
-    branches: [cicd/coverage-badge]
+    branches: [main]
 
 permissions:
   contents: write
