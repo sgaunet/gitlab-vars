@@ -6,6 +6,7 @@
 [![GoDoc](https://godoc.org/github.com/sgaunet/gitlab-vars?status.svg)](https://godoc.org/github.com/sgaunet/gitlab-vars)
 [![License](https://img.shields.io/github/license/sgaunet/gitlab-vars.svg)](LICENSE)
 
+![coverage](https://raw.githubusercontent.com/wiki/sgaunet/gitlab-vars/coverage-badge.svg)
 
 # gitlab-vars
 
